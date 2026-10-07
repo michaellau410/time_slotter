@@ -1,0 +1,6 @@
+{
+  "name": "Sanctuary — Solo Student Deep Work & Chore Batcher",
+  "description": "Standalone time batching tool for students living alone to consolidate household chores, prevent fragmented schedules, and protect long library deep study blocks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
