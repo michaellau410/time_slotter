@@ -35,12 +35,20 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
 }) => {
   const t = translations[lang].libraryModal;
   const packingItems = translations[lang].packingItems;
+  const isZh = lang === 'zh-TW';
 
   const [activeTab, setActiveTab] = useState<'timer' | 'quarantine' | 'checklist'>('timer');
+  const [activeTopic, setActiveTopic] = useState<string>(studyTopic || (isZh ? '數學與高等演算' : 'Mathematics Deep Work'));
   const [studySeconds, setStudySeconds] = useState(0);
   const [isStudying, setIsStudying] = useState(false);
   const [choreThought, setChoreThought] = useState('');
   const [quarantineSuccess, setQuarantineSuccess] = useState(false);
+
+  useEffect(() => {
+    if (studyTopic) {
+      setActiveTopic(studyTopic);
+    }
+  }, [studyTopic]);
   const [checklist, setChecklist] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     packingItems.forEach(item => {
@@ -147,13 +155,49 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
         {activeTab === 'timer' && (
           <div className="p-6 sm:p-10 text-center space-y-6 overflow-y-auto">
             {/* Subject Banner */}
-            <div className="bg-stone-800/80 border border-stone-700/60 rounded-xl p-4 max-w-md mx-auto">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 block mb-1">
+            <div className="bg-stone-800/80 border border-stone-700/60 rounded-xl p-4 max-w-md mx-auto space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 block">
                 {t.targetTitle}
               </span>
               <h2 className="text-lg font-bold text-white">
-                {studyTopic || (lang === 'zh-TW' ? '深度學術研究與期中複習' : 'Deep Research & Academic Problem Sets')}
+                {activeTopic}
               </h2>
+              {/* Quick 3-Subject Switcher */}
+              <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTopic(isZh ? '數學（深度演算與微積分）' : 'Maths (Proofs & Calculus)')}
+                  className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                    activeTopic.includes('Math') || activeTopic.includes('數學')
+                      ? 'bg-amber-400 text-stone-900 font-bold'
+                      : 'bg-stone-700/80 text-stone-300 hover:text-white'
+                  }`}
+                >
+                  📐 {isZh ? '數學' : 'Maths'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTopic(isZh ? 'AI 線上課程（影片＋PyTorch 代碼實作）' : 'A.I. Course (Videos & Python Code)')}
+                  className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                    activeTopic.includes('AI') || activeTopic.includes('課程')
+                      ? 'bg-blue-500 text-white font-bold'
+                      : 'bg-stone-700/80 text-stone-300 hover:text-white'
+                  }`}
+                >
+                  💻 {isZh ? 'AI 課程' : 'A.I. Course'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTopic(isZh ? '日語文法與讀解（安靜自修）' : 'Japanese (Grammar & Reading)')}
+                  className={`text-[11px] px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                    activeTopic.includes('Japanese') || activeTopic.includes('日語')
+                      ? 'bg-rose-500 text-white font-bold'
+                      : 'bg-stone-700/80 text-stone-300 hover:text-white'
+                  }`}
+                >
+                  🌸 {isZh ? '日語' : 'Japanese'}
+                </button>
+              </div>
             </div>
 
             {/* Huge Timer */}

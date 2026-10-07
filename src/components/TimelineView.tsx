@@ -16,6 +16,7 @@ import {
 import { ScheduleBlock, StrategyId, Task, DayParameters, Language } from '../types';
 import { translations, STRATEGY_DETAILS_I18N } from '../i18n/translations';
 import { formatMinutesDuration } from '../utils/scheduler';
+import { SubjectMatrixCard } from './SubjectMatrixCard';
 
 interface TimelineViewProps {
   schedule: {
@@ -33,6 +34,7 @@ interface TimelineViewProps {
   onSelectTaskTab: () => void;
   tasks: Task[];
   lang: Language;
+  onApplySubjectPlan: (topicTitle: string, targetHours: number) => void;
 }
 
 export const TimelineView: React.FC<TimelineViewProps> = ({
@@ -45,6 +47,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   onSelectTaskTab,
   tasks,
   lang,
+  onApplySubjectPlan,
 }) => {
   const t = translations[lang].timeline;
   const currentStrategyName = STRATEGY_DETAILS_I18N[lang][strategyId]?.name || strategyId;
@@ -121,6 +124,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 3-Subject Location & Timeslot Blueprint */}
+      <SubjectMatrixCard
+        lang={lang}
+        onApplySubjectPlan={onApplySubjectPlan}
+        onOpenLibraryWithSubject={() => onOpenLibraryMode()}
+      />
 
       {/* The Visual Schedule Blocks */}
       <div className="space-y-3">

@@ -1,5 +1,20 @@
 export type Language = 'en' | 'zh-TW';
 
+export type SubjectFocusType = 'heavy_analytical' | 'interactive_coding' | 'language_spaced_rep';
+
+export interface SubjectSlot {
+  id: string;
+  name: string;
+  categoryKey: 'maths' | 'ai' | 'japanese';
+  idealLocation: string;
+  suggestedTimeslot: string;
+  targetMinutes: number;
+  focusType: SubjectFocusType;
+  rationale: string;
+  recommendedActivities: string[];
+  tips: string;
+}
+
 export type ChoreCategory = 
   | 'kitchen'
   | 'laundry'

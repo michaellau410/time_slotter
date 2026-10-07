@@ -183,6 +183,14 @@ export default function App() {
     setTasks(prev => [...prev, task]);
   };
 
+  const handleApplySubjectPlan = (topicTitle: string, targetHours: number) => {
+    setDayParams(prev => ({
+      ...prev,
+      studyTopic: topicTitle,
+      libraryTargetHours: targetHours,
+    }));
+  };
+
   const activeChoreCount = tasks.filter(t => !t.completed).length;
 
   return (
@@ -212,6 +220,7 @@ export default function App() {
             onSelectTaskTab={() => setCurrentTab('tasks')}
             tasks={tasks}
             lang={lang}
+            onApplySubjectPlan={handleApplySubjectPlan}
           />
         )}
 
