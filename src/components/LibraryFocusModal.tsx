@@ -13,8 +13,8 @@ import {
   CheckCircle2,
   Sparkles
 } from 'lucide-react';
-import { LIBRARY_PACKING_ITEMS } from '../data/defaults';
-import { Task } from '../types';
+import { Task, Language } from '../types';
+import { translations } from '../i18n/translations';
 
 interface LibraryFocusModalProps {
   isOpen: boolean;
@@ -22,6 +22,7 @@ interface LibraryFocusModalProps {
   studyTopic: string;
   targetHours: number;
   onAddQuarantinedChore: (choreTitle: string) => void;
+  lang: Language;
 }
 
 export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
@@ -30,7 +31,11 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
   studyTopic,
   targetHours,
   onAddQuarantinedChore,
+  lang,
 }) => {
+  const t = translations[lang].libraryModal;
+  const packingItems = translations[lang].packingItems;
+
   const [activeTab, setActiveTab] = useState<'timer' | 'quarantine' | 'checklist'>('timer');
   const [studySeconds, setStudySeconds] = useState(0);
   const [isStudying, setIsStudying] = useState(false);
@@ -38,7 +43,7 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
   const [quarantineSuccess, setQuarantineSuccess] = useState(false);
   const [checklist, setChecklist] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    LIBRARY_PACKING_ITEMS.forEach(item => {
+    packingItems.forEach(item => {
       initial[item] = true;
     });
     return initial;
@@ -92,10 +97,10 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
             <BookOpen className="w-5 h-5 text-emerald-400" />
             <div>
               <span className="font-bold text-sm tracking-wide text-white block">
-                Library Focus Sanctuary
+                {t.badge}
               </span>
               <span className="text-[11px] text-stone-400">
-                Zero Domestic Distraction Zone
+                {t.zeroDistraction}
               </span>
             </div>
           </div>
@@ -105,33 +110,33 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
             <div className="flex items-center bg-stone-800 p-1 rounded-lg text-xs">
               <button
                 onClick={() => setActiveTab('timer')}
-                className={`px-3 py-1 rounded-md transition-colors ${
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                   activeTab === 'timer' ? 'bg-stone-700 text-white font-semibold' : 'text-stone-400 hover:text-white'
                 }`}
               >
-                Deep Work
+                {t.tabDeepWork}
               </button>
               <button
                 onClick={() => setActiveTab('quarantine')}
-                className={`px-3 py-1 rounded-md transition-colors ${
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                   activeTab === 'quarantine' ? 'bg-stone-700 text-amber-400 font-semibold' : 'text-stone-400 hover:text-white'
                 }`}
               >
-                Chore Quarantine
+                {t.tabQuarantine}
               </button>
               <button
                 onClick={() => setActiveTab('checklist')}
-                className={`px-3 py-1 rounded-md transition-colors ${
+                className={`px-3 py-1 rounded-md transition-colors cursor-pointer ${
                   activeTab === 'checklist' ? 'bg-stone-700 text-white font-semibold' : 'text-stone-400 hover:text-white'
                 }`}
               >
-                Bag Checklist
+                {t.tabChecklist}
               </button>
             </div>
 
             <button
               onClick={onClose}
-              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors ml-2"
+              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors ml-2 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -144,10 +149,10 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
             {/* Subject Banner */}
             <div className="bg-stone-800/80 border border-stone-700/60 rounded-xl p-4 max-w-md mx-auto">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400 block mb-1">
-                Current Study Target
+                {t.targetTitle}
               </span>
               <h2 className="text-lg font-bold text-white">
-                {studyTopic || 'Deep Research & Academic Problem Sets'}
+                {studyTopic || (lang === 'zh-TW' ? '深度學術研究與期中複習' : 'Deep Research & Academic Problem Sets')}
               </h2>
             </div>
 
@@ -157,7 +162,7 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
                 {formatTime(studySeconds)}
               </div>
               <div className="text-xs text-stone-400 font-mono mt-3">
-                Target: {targetHours}h 00m ({Math.round(progressPercent)}% completed)
+                {t.targetProgress(targetHours, Math.round(progressPercent))}
               </div>
             </div>
 
@@ -173,7 +178,7 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => setIsStudying(!isStudying)}
-                className={`px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg ${
+                className={`px-8 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg cursor-pointer ${
                   isStudying
                     ? 'bg-amber-500 hover:bg-amber-400 text-stone-950'
                     : 'bg-emerald-500 hover:bg-emerald-400 text-stone-950'
@@ -182,12 +187,12 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
                 {isStudying ? (
                   <>
                     <Pause className="w-4 h-4" />
-                    <span>Pause Session</span>
+                    <span>{t.pauseSession}</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4 fill-current" />
-                    <span>{studySeconds === 0 ? 'Begin Deep Work' : 'Resume Flow'}</span>
+                    <span>{studySeconds === 0 ? t.beginDeepWork : t.resumeFlow}</span>
                   </>
                 )}
               </button>
@@ -197,8 +202,8 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
                   setIsStudying(false);
                   setStudySeconds(0);
                 }}
-                className="p-3.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-xl transition-colors"
-                title="Reset session timer"
+                className="p-3.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-white rounded-xl transition-colors cursor-pointer"
+                title={t.resetTooltip}
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -206,7 +211,7 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
 
             {/* Quiet Philosophy Rule */}
             <div className="pt-4 text-xs text-stone-500 max-w-sm mx-auto leading-relaxed">
-              Household chores do not exist right now. Your home is locked and paused until you return.
+              {t.peaceRule}
             </div>
           </div>
         )}
@@ -217,11 +222,10 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
             <div className="space-y-1">
               <h3 className="font-bold text-base text-white flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5 text-amber-400" />
-                <span>The Chore Quarantine Box</span>
+                <span>{t.quarantineTitle}</span>
               </h3>
               <p className="text-xs text-stone-300 leading-relaxed">
-                When living alone, random chore thoughts often attack you mid-study: <em>"Did I buy laundry detergent? I should wipe the stove tonight."</em> 
-                Never derail your study flow or search Amazon now. Dump it here immediately. Sanctuary queues it for your post-library return window.
+                {t.quarantineDesc}
               </p>
             </div>
 
@@ -231,30 +235,30 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
                   type="text"
                   value={choreThought}
                   onChange={(e) => setChoreThought(e.target.value)}
-                  placeholder="e.g. Buy paper towels, clean air conditioner filter..."
+                  placeholder={t.quarantinePlaceholder}
                   className="flex-1 px-4 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-400"
                 />
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shrink-0"
+                  className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Quarantine It</span>
+                  <span>{t.quarantineBtn}</span>
                 </button>
               </div>
 
               {quarantineSuccess && (
                 <div className="p-3 bg-emerald-950/70 border border-emerald-800/80 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                  <span>Captured and safely queued for post-library! Clear your mind and return to studying.</span>
+                  <span>{t.quarantineSuccess}</span>
                 </div>
               )}
             </form>
 
             <div className="p-4 bg-stone-800/60 rounded-xl border border-stone-800 text-xs text-stone-400 space-y-1">
-              <span className="font-semibold text-stone-300 block">The Psychology:</span>
+              <span className="font-semibold text-stone-300 block">{t.psychologyTitle}</span>
               <p>
-                The Zeigarnik effect states that uncompleted tasks stick in your working memory until written down. Writing it down tricks the brain into letting go so you can maintain deep focus.
+                {t.psychologyDesc}
               </p>
             </div>
           </div>
@@ -265,22 +269,22 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
           <div className="p-6 sm:p-8 space-y-4 overflow-y-auto">
             <div>
               <h3 className="font-bold text-base text-white">
-                Pre-Departure Bag Checklist
+                {t.checklistTitle}
               </h3>
               <p className="text-xs text-stone-400 mt-0.5">
-                Never get to the library only to realize you forgot your charger or student ID.
+                {t.checklistDesc}
               </p>
             </div>
 
             <div className="space-y-2 pt-2">
-              {LIBRARY_PACKING_ITEMS.map((item) => {
-                const isChecked = checklist[item] ?? false;
+              {packingItems.map((item) => {
+                const isChecked = checklist[item] ?? true;
                 return (
                   <button
                     key={item}
                     type="button"
                     onClick={() => toggleChecklistItem(item)}
-                    className="w-full p-3 rounded-xl bg-stone-800/70 hover:bg-stone-800 border border-stone-700/60 flex items-center gap-3 text-left transition-colors"
+                    className="w-full p-3 rounded-xl bg-stone-800/70 hover:bg-stone-800 border border-stone-700/60 flex items-center gap-3 text-left transition-colors cursor-pointer"
                   >
                     {isChecked ? (
                       <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -300,3 +304,4 @@ export const LibraryFocusModal: React.FC<LibraryFocusModalProps> = ({
     </div>
   );
 };
+

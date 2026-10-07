@@ -11,11 +11,25 @@ import { StrategySection } from './components/StrategySection';
 import { ChoreSprintModal } from './components/ChoreSprintModal';
 import { LibraryFocusModal } from './components/LibraryFocusModal';
 import { SettingsDrawer } from './components/SettingsDrawer';
-import { Task, StrategyId, DayParameters, RoutineTemplate } from './types';
-import { INITIAL_TASKS, DEFAULT_DAY_PARAMETERS } from './data/defaults';
+import { Task, StrategyId, DayParameters, RoutineTemplate, Language } from './types';
+import { INITIAL_TASKS, INITIAL_TASKS_ZH, DEFAULT_DAY_PARAMETERS } from './data/defaults';
 import { generateSchedule } from './utils/scheduler';
+import { translations } from './i18n/translations';
 
 export default function App() {
+  // Language state: 'en' | 'zh-TW'
+  const [lang, setLang] = useState<Language>(() => {
+    try {
+      const saved = localStorage.getItem('sanctuary_lang');
+      if (saved === 'zh-TW' || saved === 'en') return saved;
+      // Auto-detect browser language if Traditional Chinese
+      if (typeof navigator !== 'undefined' && navigator.language) {
+        if (navigator.language.startsWith('zh')) return 'zh-TW';
+      }
+    } catch (e) {}
+    return 'en';
+  });
+
   // Tab state: 'schedule' | 'tasks' | 'strategies'
   const [currentTab, setCurrentTab] = useState<'schedule' | 'tasks' | 'strategies'>('schedule');
 
@@ -55,6 +69,13 @@ export default function App() {
     return DEFAULT_DAY_PARAMETERS;
   });
 
+  // Save language to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('sanctuary_lang', lang);
+    } catch (e) {}
+  }, [lang]);
+
   // Save to localStorage when state changes
   useEffect(() => {
     try {
@@ -74,10 +95,29 @@ export default function App() {
     } catch (e) {}
   }, [dayParams]);
 
-  // Dynamic schedule computation
+  // Dynamic schedule computation with language support
   const schedule = useMemo(() => {
-    return generateSchedule(tasks, strategy, dayParams);
-  }, [tasks, strategy, dayParams]);
+    return generateSchedule(tasks, strategy, dayParams, lang);
+  }, [tasks, strategy, dayParams, lang]);
+
+  // Language toggle handler: if user switches language and still has pristine initial tasks, can switch defaults
+  const handleToggleLanguage = (newLang: Language) => {
+    setLang(newLang);
+    // If tasks are strictly default tasks from the other language, seamlessly switch them
+    if (newLang === 'zh-TW' && JSON.stringify(tasks) === JSON.stringify(INITIAL_TASKS)) {
+      setTasks(INITIAL_TASKS_ZH);
+      setDayParams(prev => ({
+        ...prev,
+        studyTopic: '計量經濟學期末複習 / 論文研讀',
+      }));
+    } else if (newLang === 'en' && JSON.stringify(tasks) === JSON.stringify(INITIAL_TASKS_ZH)) {
+      setTasks(INITIAL_TASKS);
+      setDayParams(prev => ({
+        ...prev,
+        studyTopic: 'Algorithms & Data Structures / Term Paper',
+      }));
+    }
+  };
 
   // Task actions
   const handleAddTask = (newTask: Omit<Task, 'id' | 'completed'>) => {
@@ -138,7 +178,7 @@ export default function App() {
       type: 'active',
       placement: 'post_library',
       completed: false,
-      notes: 'Captured during library deep work session',
+      notes: lang === 'zh-TW' ? '於圖書館深度專注時記錄' : 'Captured during library deep work session',
     };
     setTasks(prev => [...prev, task]);
   };
@@ -147,7 +187,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans">
-      {/* 3-Zone Compliant Top Navigation */}
+      {/* 3-Zone Compliant Top Navigation with Language Switcher */}
       <TopNav
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
@@ -155,6 +195,8 @@ export default function App() {
         onOpenLibraryMode={() => setIsLibraryOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         activeChoreCount={activeChoreCount}
+        lang={lang}
+        onToggleLanguage={handleToggleLanguage}
       />
 
       {/* Main Viewport Container */}
@@ -169,6 +211,7 @@ export default function App() {
             onSelectStrategyTab={() => setCurrentTab('strategies')}
             onSelectTaskTab={() => setCurrentTab('tasks')}
             tasks={tasks}
+            lang={lang}
           />
         )}
 
@@ -182,6 +225,7 @@ export default function App() {
             onApplyTemplate={handleApplyTemplate}
             onClearCompleted={handleClearCompleted}
             libraryHours={dayParams.libraryTargetHours}
+            lang={lang}
           />
         )}
 
@@ -190,6 +234,7 @@ export default function App() {
             currentStrategy={strategy}
             onSelectStrategy={setStrategy}
             onGoToTimeline={() => setCurrentTab('schedule')}
+            lang={lang}
           />
         )}
       </main>
@@ -198,28 +243,41 @@ export default function App() {
       <footer className="border-t border-stone-200 bg-white py-6 mt-12 text-xs text-stone-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-800">Sanctuary</span>
+            <span className="font-semibold text-stone-800">
+              {lang === 'zh-TW' ? 'Sanctuary 庇護所' : 'Sanctuary'}
+            </span>
             <span aria-hidden="true">·</span>
-            <span>Standalone Time Batching for Solo Living Students</span>
+            <span>
+              {lang === 'zh-TW' 
+                ? '專為獨居學生設計的零碎片化批次排程系統' 
+                : 'Standalone Time Batching for Solo Living Students'}
+            </span>
             <span aria-hidden="true">·</span>
-            <span>100% Client-Side Private Storage</span>
+            <span>
+              {lang === 'zh-TW' ? '100% 本地隱私儲存' : '100% Client-Side Private Storage'}
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
-                if (confirm('Reset to standard student routine template?')) {
-                  setTasks(INITIAL_TASKS);
+                const promptMsg = lang === 'zh-TW' 
+                  ? '確定要重置為預設的學生日常範本嗎？' 
+                  : 'Reset to standard student routine template?';
+                if (confirm(promptMsg)) {
+                  setTasks(lang === 'zh-TW' ? INITIAL_TASKS_ZH : INITIAL_TASKS);
                   setStrategy('consolidated_sprint');
                   setDayParams(DEFAULT_DAY_PARAMETERS);
                 }
               }}
               className="hover:text-stone-900 transition-colors cursor-pointer"
             >
-              Reset to Defaults
+              {lang === 'zh-TW' ? '重置為預設範本' : 'Reset to Defaults'}
             </button>
             <span aria-hidden="true">·</span>
-            <span>Protects Deep Study Hours</span>
+            <span>
+              {lang === 'zh-TW' ? '守護整塊深度學習時光' : 'Protects Deep Study Hours'}
+            </span>
           </div>
         </div>
       </footer>
@@ -231,6 +289,7 @@ export default function App() {
         onClose={() => setIsSprintOpen(false)}
         onCompleteTask={handleToggleTask}
         onCompleteAll={handleCompleteAllTasks}
+        lang={lang}
       />
 
       <LibraryFocusModal
@@ -239,6 +298,7 @@ export default function App() {
         studyTopic={dayParams.studyTopic}
         targetHours={dayParams.libraryTargetHours}
         onAddQuarantinedChore={handleAddQuarantinedChore}
+        lang={lang}
       />
 
       <SettingsDrawer
@@ -246,6 +306,7 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         params={dayParams}
         onSave={setDayParams}
+        lang={lang}
       />
     </div>
   );

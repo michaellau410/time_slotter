@@ -1,3 +1,5 @@
+export type Language = 'en' | 'zh-TW';
+
 export type ChoreCategory = 
   | 'kitchen'
   | 'laundry'

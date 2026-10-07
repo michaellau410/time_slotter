@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, Clock, MapPin, BookOpen, Moon, Sun, Save, Sliders } from 'lucide-react';
-import { DayParameters } from '../types';
+import { DayParameters, Language } from '../types';
+import { translations } from '../i18n/translations';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   params: DayParameters;
   onSave: (newParams: DayParameters) => void;
+  lang: Language;
 }
 
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
@@ -14,7 +16,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   onClose,
   params,
   onSave,
+  lang,
 }) => {
+  const t = translations[lang].settingsDrawer;
+
   const [wakeTime, setWakeTime] = useState(params.wakeTime);
   const [sleepTime, setSleepTime] = useState(params.sleepTime);
   const [libraryTargetHours, setLibraryTargetHours] = useState(params.libraryTargetHours);
@@ -43,12 +48,12 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-amber-400" />
             <h3 className="font-bold text-base text-white">
-              Daily Anchor Parameters
+              {t.title}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors"
+            className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -61,10 +66,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
               <label className="text-xs font-semibold text-stone-300 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="w-4 h-4 text-emerald-400" />
-                  <span>Library Study Target</span>
+                  <span>{t.studyTargetLabel}</span>
                 </span>
                 <span className="font-mono text-emerald-400 font-bold tabular-nums">
-                  {libraryTargetHours} Hours
+                  {t.studyTargetHours(libraryTargetHours)}
                 </span>
               </label>
               <input
@@ -86,13 +91,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             {/* Study Topic */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-300 block">
-                Primary Academic Topic Today
+                {t.studyTopicLabel}
               </label>
               <input
                 type="text"
                 value={studyTopic}
                 onChange={(e) => setStudyTopic(e.target.value)}
-                placeholder="e.g. Econometrics Assignment, Organic Chemistry"
+                placeholder={t.studyTopicPlaceholder}
                 className="w-full px-3.5 py-2 bg-stone-800 border border-stone-700 rounded-lg text-sm text-white focus:outline-none focus:border-amber-400"
               />
             </div>
@@ -101,7 +106,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
                 <Sun className="w-4 h-4 text-amber-400" />
-                <span>Wake Up Time</span>
+                <span>{t.wakeTimeLabel}</span>
               </label>
               <input
                 type="time"
@@ -116,10 +121,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
               <label className="text-xs font-semibold text-stone-300 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-blue-400" />
-                  <span>One-Way Transit to Library</span>
+                  <span>{t.commuteLabel}</span>
                 </span>
                 <span className="font-mono text-blue-400 font-bold tabular-nums">
-                  {commuteMinutes} Minutes
+                  {t.commuteMinutes(commuteMinutes)}
                 </span>
               </label>
               <input
@@ -142,7 +147,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
                 <Moon className="w-4 h-4 text-purple-400" />
-                <span>Evening Wind-Down / Bedtime</span>
+                <span>{t.sleepTimeLabel}</span>
               </label>
               <input
                 type="time"
@@ -156,10 +161,10 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
           <div className="pt-6 border-t border-stone-800">
             <button
               type="submit"
-              className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>Update Schedule Anchors</span>
+              <span>{t.saveBtn}</span>
             </button>
           </div>
         </form>
@@ -167,3 +172,4 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     </div>
   );
 };
+

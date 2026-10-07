@@ -1,5 +1,120 @@
 import { Task, StrategyInfo, DayParameters, RoutineTemplate } from '../types';
 
+export const INITIAL_TASKS_ZH: Task[] = [
+  {
+    id: 't-1',
+    title: '清洗早餐碗盤並擦拭廚房流理台',
+    estimateMinutes: 15,
+    category: 'kitchen',
+    type: 'active',
+    placement: 'pre_library',
+    completed: false,
+  },
+  {
+    id: 't-2',
+    title: '啟動洗衣機清洗衣物（被動運轉）',
+    estimateMinutes: 5,
+    category: 'laundry',
+    type: 'passive',
+    placement: 'pre_library',
+    completed: false,
+    notes: '出門準備時洗衣機同步運轉 45 分鐘',
+  },
+  {
+    id: 't-3',
+    title: '打包房間與廚房垃圾並拿去回收桶',
+    estimateMinutes: 5,
+    category: 'errands',
+    type: 'active',
+    placement: 'pre_library',
+    completed: false,
+  },
+  {
+    id: 't-4',
+    title: '快速整理書桌與房間掃地',
+    estimateMinutes: 10,
+    category: 'quick_tidy',
+    type: 'active',
+    placement: 'pre_library',
+    completed: false,
+  },
+  {
+    id: 't-5',
+    title: '將洗好的衣服掛上曬衣架晾曬',
+    estimateMinutes: 15,
+    category: 'laundry',
+    type: 'active',
+    placement: 'post_library',
+    completed: false,
+  },
+  {
+    id: 't-6',
+    title: '洗米煮飯與簡易備料（電鍋準備）',
+    estimateMinutes: 20,
+    category: 'meal_prep',
+    type: 'active',
+    placement: 'post_library',
+    completed: false,
+  },
+];
+
+export const ROUTINE_TEMPLATES_ZH: RoutineTemplate[] = [
+  {
+    id: 'tpl-library-grind',
+    name: '標準圖書館日（4.5h 專注）',
+    description: '晨間快速啟動、下午深度專注、返家輕鬆整理。',
+    defaultParams: {
+      wakeTime: '08:00',
+      sleepTime: '23:30',
+      libraryTargetHours: 4.5,
+      commuteMinutes: 20,
+      preferredStudyTimeOfDay: 'afternoon',
+    },
+    tasks: [
+      { title: '洗碗並擦拭流理台', estimateMinutes: 15, category: 'kitchen', type: 'active', placement: 'pre_library' },
+      { title: '倒垃圾與資源回收', estimateMinutes: 5, category: 'errands', type: 'active', placement: 'pre_library' },
+      { title: '快速整理書桌與鋪床', estimateMinutes: 10, category: 'quick_tidy', type: 'active', placement: 'pre_library' },
+      { title: '電鍋煮飯與簡易備餐', estimateMinutes: 25, category: 'meal_prep', type: 'active', placement: 'post_library' },
+    ],
+  },
+  {
+    id: 'tpl-weekend-reset',
+    name: '週末重整日（3.5h 專注）',
+    description: '洗床單衣物、擦浴室鏡子、採買物資，隨後進行輕鬆學習。',
+    defaultParams: {
+      wakeTime: '09:00',
+      sleepTime: '00:00',
+      libraryTargetHours: 3.5,
+      commuteMinutes: 25,
+      preferredStudyTimeOfDay: 'afternoon',
+    },
+    tasks: [
+      { title: '洗衣機洗床單被套（被動運轉）', estimateMinutes: 5, category: 'laundry', type: 'passive', placement: 'pre_library', notes: '45分鐘機洗' },
+      { title: '廚房徹底清潔與洗碗', estimateMinutes: 20, category: 'kitchen', type: 'active', placement: 'pre_library' },
+      { title: '浴室洗手台與鏡子擦拭', estimateMinutes: 10, category: 'cleaning', type: 'active', placement: 'pre_library' },
+      { title: '曬衣服與床單', estimateMinutes: 15, category: 'laundry', type: 'active', placement: 'pre_library' },
+      { title: '超市採買一週生活日用品', estimateMinutes: 30, category: 'errands', type: 'active', placement: 'post_library' },
+    ],
+  },
+  {
+    id: 'tpl-exam-crunch',
+    name: '期末衝刺日（6.0h 專注）',
+    description: '家務壓至最低（僅20分鐘），將 6 小時全部投入圖書館。',
+    defaultParams: {
+      wakeTime: '07:30',
+      sleepTime: '23:30',
+      libraryTargetHours: 6.0,
+      commuteMinutes: 15,
+      preferredStudyTimeOfDay: 'morning',
+    },
+    tasks: [
+      { title: '快速沖洗杯盤', estimateMinutes: 5, category: 'kitchen', type: 'active', placement: 'pre_library' },
+      { title: '出門順手帶垃圾下樓', estimateMinutes: 5, category: 'errands', type: 'active', placement: 'pre_library' },
+      { title: '整理書包：筆電、充電線、考古題、保溫瓶', estimateMinutes: 10, category: 'quick_tidy', type: 'active', placement: 'pre_library' },
+    ],
+  },
+];
+
 export const INITIAL_TASKS: Task[] = [
   {
     id: 't-1',

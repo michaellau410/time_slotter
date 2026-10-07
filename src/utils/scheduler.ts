@@ -1,4 +1,4 @@
-import { Task, StrategyId, DayParameters, ScheduleBlock } from '../types';
+import { Task, StrategyId, DayParameters, ScheduleBlock, Language } from '../types';
 
 export function timeToMinutes(timeStr: string): number {
   const [hours, minutes] = timeStr.split(':').map(Number);
@@ -13,9 +13,14 @@ export function minutesToTime(totalMinutes: number): string {
   return `${pad(hours)}:${pad(minutes)}`;
 }
 
-export function formatMinutesDuration(totalMinutes: number): string {
+export function formatMinutesDuration(totalMinutes: number, lang: Language = 'en'): string {
   const h = Math.floor(totalMinutes / 60);
   const m = totalMinutes % 60;
+  if (lang === 'zh-TW') {
+    if (h === 0) return `${m}分鐘`;
+    if (m === 0) return `${h}小時`;
+    return `${h}小時${m}分鐘`;
+  }
   if (h === 0) return `${m}m`;
   if (m === 0) return `${h}h`;
   return `${h}h ${m}m`;
@@ -79,7 +84,8 @@ export function partitionTasksByStrategy(tasks: Task[], strategy: StrategyId): {
 export function generateSchedule(
   tasks: Task[],
   strategy: StrategyId,
-  params: DayParameters
+  params: DayParameters,
+  lang: Language = 'en'
 ): {
   blocks: ScheduleBlock[];
   totalChoreMinutes: number;
@@ -87,6 +93,7 @@ export function generateSchedule(
   departureTime: string;
   returnTime: string;
 } {
+  const isZh = lang === 'zh-TW';
   const { preLibraryTasks, postLibraryTasks } = partitionTasksByStrategy(tasks, strategy);
 
   const preChoreDuration = preLibraryTasks.reduce((acc, t) => acc + t.estimateMinutes, 0);
@@ -100,28 +107,38 @@ export function generateSchedule(
   const wakeDuration = 30;
   blocks.push({
     id: 'block-wake',
-    title: 'Morning Routine & Breakfast',
+    title: isZh ? '晨間例行與早餐' : 'Morning Routine & Breakfast',
     startTime: minutesToTime(currentMin),
     endTime: minutesToTime(currentMin + wakeDuration),
     startMinutes: currentMin,
     durationMinutes: wakeDuration,
     type: 'wake_routine',
-    description: 'Hydrate, breakfast, review today’s study goals without checking social media.',
+    description: isZh 
+      ? '喝水補水、享用早餐，確認今日學習目標，不滑社群媒體。'
+      : 'Hydrate, breakfast, review today’s study goals without checking social media.',
   });
   currentMin += wakeDuration;
 
   // 2. Pre-Library Chore Sprint (if tasks exist)
   if (preChoreDuration > 0) {
+    const title = strategy === 'library_bookends' 
+      ? (isZh ? '出發前啟動站' : 'Pre-Departure Launchpad') 
+      : (isZh ? '出發前雜務極速衝刺' : 'Chore Speedrun Batch');
+
+    const desc = isZh
+      ? `迅速搞定 ${preLibraryTasks.length} 項家務瑣事，啟動專注衝刺！`
+      : `Speedrun through ${preLibraryTasks.length} household micro-tasks. Beat the clock!`;
+
     blocks.push({
       id: 'block-pre-chore',
-      title: strategy === 'library_bookends' ? 'Pre-Departure Launchpad' : 'Chore Speedrun Batch',
+      title,
       startTime: minutesToTime(currentMin),
       endTime: minutesToTime(currentMin + preChoreDuration),
       startMinutes: currentMin,
       durationMinutes: preChoreDuration,
       type: 'chore_sprint',
       tasks: preLibraryTasks,
-      description: `Speedrun through ${preLibraryTasks.length} household micro-tasks. Beat the clock!`,
+      description: desc,
     });
     currentMin += preChoreDuration;
   }
@@ -133,40 +150,46 @@ export function generateSchedule(
   // 3. Commute to Library
   blocks.push({
     id: 'block-commute-out',
-    title: 'Transit to Library Sanctuary',
+    title: isZh ? '前往圖書館（交通緩衝）' : 'Transit to Library Sanctuary',
     startTime: minutesToTime(currentMin),
     endTime: minutesToTime(currentMin + params.commuteMinutes),
     startMinutes: currentMin,
     durationMinutes: params.commuteMinutes,
     type: 'commute',
-    description: 'Listen to study podcast, mentally shift gears into academic mode.',
+    description: isZh
+      ? '聽專注音樂或課業播客，將思維調整至圖書館學術模式。'
+      : 'Listen to study podcast, mentally shift gears into academic mode.',
   });
   currentMin += params.commuteMinutes;
 
   // 4. Sacred Library Deep Focus Block (Unbroken!)
   blocks.push({
     id: 'block-library-study',
-    title: 'Sacred Library Deep Work Block',
+    title: isZh ? '神聖圖書館深度專注時段' : 'Sacred Library Deep Work Block',
     startTime: minutesToTime(currentMin),
     endTime: minutesToTime(currentMin + studyDuration),
     startMinutes: currentMin,
     durationMinutes: studyDuration,
     type: 'library_deep_focus',
     isLibraryBlock: true,
-    description: `Zero domestic interruptions. Dedicated to: ${params.studyTopic || 'Deep Study'}.`,
+    description: isZh
+      ? `零家務中斷。專注攻讀目標：${params.studyTopic || '深度學術課題'}。`
+      : `Zero domestic interruptions. Dedicated to: ${params.studyTopic || 'Deep Study'}.`,
   });
   currentMin += studyDuration;
 
   // 5. Commute Back Home
   blocks.push({
     id: 'block-commute-return',
-    title: 'Commute Return Home',
+    title: isZh ? '返家路程（心情切換）' : 'Commute Return Home',
     startTime: minutesToTime(currentMin),
     endTime: minutesToTime(currentMin + params.commuteMinutes),
     startMinutes: currentMin,
     durationMinutes: params.commuteMinutes,
     type: 'commute',
-    description: 'Decompress, transition from high-cognitive study to home space.',
+    description: isZh
+      ? '放鬆身心，從高強度認知學習自然過渡回居家生活空間。'
+      : 'Decompress, transition from high-cognitive study to home space.',
   });
   currentMin += params.commuteMinutes;
 
@@ -177,14 +200,16 @@ export function generateSchedule(
   if (postChoreDuration > 0) {
     blocks.push({
       id: 'block-post-chore',
-      title: 'Post-Library Chore Cooldown',
+      title: isZh ? '圖書館返家放鬆雜務' : 'Post-Library Chore Cooldown',
       startTime: minutesToTime(currentMin),
       endTime: minutesToTime(currentMin + postChoreDuration),
       startMinutes: currentMin,
       durationMinutes: postChoreDuration,
       type: 'chore_cooldown',
       tasks: postLibraryTasks,
-      description: `Mindless physical chores (${postLibraryTasks.length} tasks) to relax prefrontal cortex.`,
+      description: isZh
+        ? `進行 ${postLibraryTasks.length} 項體力型重複家務，讓前額葉皮質深層休息。`
+        : `Mindless physical chores (${postLibraryTasks.length} tasks) to relax prefrontal cortex.`,
     });
     currentMin += postChoreDuration;
   }
@@ -196,13 +221,15 @@ export function generateSchedule(
 
   blocks.push({
     id: 'block-evening',
-    title: 'Dinner & Guilt-Free Rest',
+    title: isZh ? '晚餐與無負擔自由放鬆' : 'Dinner & Guilt-Free Rest',
     startTime: minutesToTime(currentMin),
     endTime: minutesToTime(currentMin + eveningDuration),
     startMinutes: currentMin,
     durationMinutes: eveningDuration,
     type: 'leisure',
-    description: 'Relax, read, call friends or watch a show. Chores and study are both complete!',
+    description: isZh
+      ? '享用晚餐、看劇、放鬆聊天。家務已清空，讀書目標也已達成！'
+      : 'Relax, read, call friends or watch a show. Chores and study are both complete!',
   });
 
   return {

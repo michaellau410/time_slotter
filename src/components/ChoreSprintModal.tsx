@@ -12,7 +12,8 @@ import {
   Flame,
   ArrowRight
 } from 'lucide-react';
-import { Task } from '../types';
+import { Task, Language } from '../types';
+import { translations } from '../i18n/translations';
 
 interface ChoreSprintModalProps {
   tasks: Task[];
@@ -20,6 +21,7 @@ interface ChoreSprintModalProps {
   onClose: () => void;
   onCompleteTask: (id: string) => void;
   onCompleteAll: () => void;
+  lang: Language;
 }
 
 export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
@@ -28,8 +30,10 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
   onClose,
   onCompleteTask,
   onCompleteAll,
+  lang,
 }) => {
-  const sprintTasks = tasks.filter(t => !t.completed && t.type === 'active');
+  const t = translations[lang].sprintModal;
+  const sprintTasks = tasks.filter(tItem => !tItem.completed && tItem.type === 'active');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -117,21 +121,21 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-amber-400" />
             <span className="font-bold text-sm tracking-wide text-white uppercase">
-              Chore Speedrun Mode
+              {t.badge}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors"
+              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors cursor-pointer"
               title={soundEnabled ? 'Mute sound' : 'Enable sound'}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors"
+              className="p-1.5 text-stone-400 hover:text-white rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -142,39 +146,39 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
         {sprintTasks.length === 0 ? (
           <div className="p-8 text-center space-y-4">
             <Sparkles className="w-12 h-12 text-amber-400 mx-auto" />
-            <h3 className="text-xl font-bold text-white">All Chores Cleared!</h3>
+            <h3 className="text-xl font-bold text-white">{t.allClearedTitle}</h3>
             <p className="text-sm text-stone-300 max-w-xs mx-auto">
-              Your apartment is reset. Grab your bag and head straight to the library!
+              {t.allClearedDesc}
             </p>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition-colors"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition-colors cursor-pointer"
             >
-              Ready to Depart for Library
+              {t.readyDepartBtn}
             </button>
           </div>
         ) : !currentTask ? (
           <div className="p-8 text-center space-y-4">
-            <h3 className="text-xl font-bold text-white">Sprint Completed!</h3>
+            <h3 className="text-xl font-bold text-white">{t.sprintCompletedTitle}</h3>
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-amber-400 text-stone-900 font-bold text-sm rounded-xl transition-colors"
+              className="px-6 py-2.5 bg-amber-400 text-stone-900 font-bold text-sm rounded-xl transition-colors cursor-pointer"
             >
-              Close Runner
+              {t.closeBtn}
             </button>
           </div>
         ) : (
           <div className="p-6 sm:p-8 space-y-6">
             {/* Step Counter */}
             <div className="flex items-center justify-between text-xs text-stone-400 font-mono">
-              <span>Task {currentIndex + 1} of {sprintTasks.length}</span>
-              <span>Estimated: {currentTask.estimateMinutes}m</span>
+              <span>{t.taskStep(currentIndex + 1, sprintTasks.length)}</span>
+              <span>{t.estimatedLabel(currentTask.estimateMinutes)}</span>
             </div>
 
             {/* Task Name Title */}
             <div className="text-center space-y-1">
               <span className="text-xs uppercase tracking-widest text-amber-400 font-semibold block">
-                Current Objective
+                {t.currentObjective}
               </span>
               <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
                 {currentTask.title}
@@ -187,7 +191,7 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
                 {formatTimer(secondsRemaining)}
               </div>
               <p className="text-xs text-stone-400 mt-2">
-                {secondsRemaining === 0 ? 'Time up! Wrap it up swiftly!' : 'Focus strictly on this chore — zero phone checks.'}
+                {secondsRemaining === 0 ? t.timerTipTimeUp : t.timerTipFocus}
               </p>
             </div>
 
@@ -204,15 +208,15 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsRunning(!isRunning)}
-                  className="flex-1 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5"
+                  className="flex-1 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-                  <span>{isRunning ? 'Pause Timer' : 'Resume Timer'}</span>
+                  <span>{isRunning ? t.pauseTimer : t.resumeTimer}</span>
                 </button>
 
                 <button
                   onClick={() => handleAddMinutes(2)}
-                  className="px-3 py-3 bg-stone-800 hover:bg-stone-700 text-stone-300 font-mono text-xs rounded-xl transition-colors"
+                  className="px-3 py-3 bg-stone-800 hover:bg-stone-700 text-stone-300 font-mono text-xs rounded-xl transition-colors cursor-pointer"
                   title="Add 2 minutes"
                 >
                   +2m
@@ -220,23 +224,23 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
 
                 <button
                   onClick={handleDoneCurrent}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-md"
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
-                  <span>Done & Next</span>
+                  <span>{t.doneAndNext}</span>
                 </button>
               </div>
 
               {currentIndex < sprintTasks.length - 1 && (
                 <div className="flex items-center justify-between pt-2 text-xs text-stone-400">
                   <span className="truncate mr-2">
-                    Next up: <strong className="text-stone-300">{sprintTasks[currentIndex + 1]?.title}</strong>
+                    {t.nextUp}<strong className="text-stone-300">{sprintTasks[currentIndex + 1]?.title}</strong>
                   </span>
                   <button
                     onClick={handleSkip}
-                    className="hover:text-white transition-colors flex items-center gap-1 shrink-0"
+                    className="hover:text-white transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
                   >
-                    <span>Skip</span>
+                    <span>{t.skip}</span>
                     <SkipForward className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -248,3 +252,4 @@ export const ChoreSprintModal: React.FC<ChoreSprintModalProps> = ({
     </div>
   );
 };
+

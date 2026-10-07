@@ -13,8 +13,8 @@ import {
   Shield,
   Layers
 } from 'lucide-react';
-import { ScheduleBlock, StrategyId, Task, DayParameters } from '../types';
-import { STRATEGIES } from '../data/defaults';
+import { ScheduleBlock, StrategyId, Task, DayParameters, Language } from '../types';
+import { translations, STRATEGY_DETAILS_I18N } from '../i18n/translations';
 import { formatMinutesDuration } from '../utils/scheduler';
 
 interface TimelineViewProps {
@@ -32,6 +32,7 @@ interface TimelineViewProps {
   onSelectStrategyTab: () => void;
   onSelectTaskTab: () => void;
   tasks: Task[];
+  lang: Language;
 }
 
 export const TimelineView: React.FC<TimelineViewProps> = ({
@@ -43,8 +44,10 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   onSelectStrategyTab,
   onSelectTaskTab,
   tasks,
+  lang,
 }) => {
-  const currentStrategy = STRATEGIES.find(s => s.id === strategyId) || STRATEGIES[0];
+  const t = translations[lang].timeline;
+  const currentStrategyName = STRATEGY_DETAILS_I18N[lang][strategyId]?.name || strategyId;
   const pendingTasks = tasks.filter(t => !t.completed);
 
   return (
@@ -56,42 +59,44 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Shield className="w-3.5 h-3.5" />
-                Protected Flow Architecture
+                {t.protectedArchitecture}
               </span>
               <span className="text-stone-500">·</span>
               <button
                 onClick={onSelectStrategyTab}
-                className="text-xs text-stone-300 hover:text-white underline decoration-stone-600 underline-offset-2 transition-colors"
+                className="text-xs text-stone-300 hover:text-white underline decoration-stone-600 underline-offset-2 transition-colors cursor-pointer"
               >
-                Strategy: {currentStrategy.name.split('.')[1]?.trim() || currentStrategy.name}
+                {t.strategyPrefix} {currentStrategyName}
               </button>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              {formatMinutesDuration(schedule.uninterruptedStudyMinutes)} Unbroken Library Focus Block
+              {t.unbrokenFocusBlock(formatMinutesDuration(schedule.uninterruptedStudyMinutes, lang))}
             </h1>
 
             <p className="text-sm text-stone-300 max-w-2xl leading-relaxed">
-              Household chores have been bundled into dedicated batch windows. Your afternoon library session is mathematically shielded from chore debt.
+              {t.heroDescription}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-stone-300 font-mono">
               <div className="flex items-center gap-1.5 bg-stone-800/80 px-3 py-1.5 rounded-lg border border-stone-700/60">
                 <Clock className="w-3.5 h-3.5 text-amber-400" />
-                <span>Depart Home:</span>
+                <span>{t.departHome}</span>
                 <span className="text-amber-400 font-bold tabular-nums">{schedule.departureTime}</span>
               </div>
 
               <div className="flex items-center gap-1.5 bg-stone-800/80 px-3 py-1.5 rounded-lg border border-stone-700/60">
                 <Home className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Return Home:</span>
+                <span>{t.returnHome}</span>
                 <span className="text-emerald-400 font-bold tabular-nums">{schedule.returnTime}</span>
               </div>
 
               <div className="flex items-center gap-1.5 bg-stone-800/80 px-3 py-1.5 rounded-lg border border-stone-700/60">
                 <Layers className="w-3.5 h-3.5 text-blue-400" />
-                <span>Chore Overhead:</span>
-                <span className="text-blue-300 font-bold tabular-nums">{formatMinutesDuration(schedule.totalChoreMinutes)}</span>
+                <span>{t.choreOverhead}</span>
+                <span className="text-blue-300 font-bold tabular-nums">
+                  {formatMinutesDuration(schedule.totalChoreMinutes, lang)}
+                </span>
               </div>
             </div>
           </div>
@@ -100,18 +105,18 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
           <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 shrink-0">
             <button
               onClick={onOpenSprint}
-              className="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="px-5 py-3 bg-amber-400 hover:bg-amber-300 text-stone-900 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
               <Play className="w-4 h-4 fill-current" />
-              <span>Speedrun Chores ({formatMinutesDuration(schedule.totalChoreMinutes)})</span>
+              <span>{t.speedrunChores(formatMinutesDuration(schedule.totalChoreMinutes, lang))}</span>
             </button>
 
             <button
               onClick={onOpenLibraryMode}
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
               <BookOpen className="w-4 h-4" />
-              <span>Enter Library Mode</span>
+              <span>{t.enterLibrary}</span>
             </button>
           </div>
         </div>
@@ -121,15 +126,15 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-base sm:text-lg font-bold text-stone-900">
-            Today's Chronological Master Flow
+            {t.flowTitle}
           </h2>
           <span className="text-xs text-stone-500">
-            Wake: {dayParams.wakeTime} · Sleep: {dayParams.sleepTime}
+            {t.flowSubtitle(dayParams.wakeTime, dayParams.sleepTime)}
           </span>
         </div>
 
         <div className="space-y-3">
-          {schedule.blocks.map((block, index) => {
+          {schedule.blocks.map((block) => {
             const isLibrary = block.isLibraryBlock;
             const isChore = block.type === 'chore_sprint' || block.type === 'chore_cooldown';
             const isCommute = block.type === 'commute';
@@ -155,7 +160,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                         {block.startTime} – {block.endTime}
                       </div>
                       <div className={`text-[11px] font-mono tabular-nums ${isLibrary ? 'text-emerald-300/70' : 'text-stone-400'}`}>
-                        ({formatMinutesDuration(block.durationMinutes)})
+                        ({formatMinutesDuration(block.durationMinutes, lang)})
                       </div>
                     </div>
 
@@ -168,13 +173,13 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
 
                         {isLibrary && (
                           <span className="text-[10px] font-bold tracking-wider uppercase bg-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded border border-emerald-400/30">
-                            Sacred Sanctuary Block
+                            {t.sacredSanctuaryBadge}
                           </span>
                         )}
 
                         {isChore && (
                           <span className="text-[10px] font-semibold bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded">
-                            Batched Window
+                            {t.batchedWindowBadge}
                           </span>
                         )}
                       </div>
@@ -187,25 +192,25 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                       {block.tasks && block.tasks.length > 0 && (
                         <div className="pt-2">
                           <div className="text-xs font-semibold text-stone-700 mb-1.5 flex items-center justify-between">
-                            <span>Tasks packed inside this batch:</span>
+                            <span>{t.tasksInsideBatch}</span>
                             <button
                               onClick={onSelectTaskTab}
-                              className="text-[11px] text-amber-700 hover:underline"
+                              className="text-[11px] text-amber-700 hover:underline cursor-pointer"
                             >
-                              Edit Tasks & Estimates
+                              {t.editTasksBtn}
                             </button>
                           </div>
                           <div className="space-y-1">
-                            {block.tasks.map((t) => (
+                            {block.tasks.map((tItem) => (
                               <div
-                                key={t.id}
+                                key={tItem.id}
                                 className="flex items-center justify-between text-xs bg-white/80 border border-stone-200/60 rounded px-2.5 py-1"
                               >
                                 <span className="text-stone-800 truncate mr-2">
-                                  {t.title}
+                                  {tItem.title}
                                 </span>
                                 <span className="font-mono text-stone-500 tabular-nums shrink-0">
-                                  {t.estimateMinutes}m
+                                  {tItem.estimateMinutes}m
                                 </span>
                               </div>
                             ))}
@@ -220,20 +225,20 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
                     {isChore && (
                       <button
                         onClick={onOpenSprint}
-                        className="w-full text-xs font-semibold px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                        className="w-full text-xs font-semibold px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Play className="w-3 h-3 text-amber-400 fill-current" />
-                        <span>Run Timer</span>
+                        <span>{t.runTimerBtn}</span>
                       </button>
                     )}
 
                     {isLibrary && (
                       <button
                         onClick={onOpenLibraryMode}
-                        className="w-full text-xs font-bold px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                        className="w-full text-xs font-bold px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-stone-950 rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                       >
                         <BookOpen className="w-3.5 h-3.5" />
-                        <span>Launch Study Room</span>
+                        <span>{t.launchRoomBtn}</span>
                       </button>
                     )}
                   </div>
@@ -248,33 +253,31 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
       <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-xs">
         <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-3 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-600" />
-          Why This Saves Your Academic Semester
+          {t.whyThisSavesSemester}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
           <div className="p-4 rounded-lg bg-stone-50 border border-stone-200 space-y-2">
             <div className="font-bold text-stone-800 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500"></span>
-              The Fragmented "Living Alone" Trap
+              {t.fragmentedTrapTitle}
             </div>
             <ul className="space-y-1.5 text-stone-600 text-xs leading-relaxed">
-              <li>• You wake up and wash 1 breakfast dish (10m).</li>
-              <li>• You sit down to study at your desk, but notice the dirty floor and grab the broom (20m).</li>
-              <li>• You prepare lunch and dirty another pot (45m).</li>
-              <li>• By 3:00 PM, you realize you haven't left for the library yet. You feel drained without having done real studying.</li>
+              {t.fragmentedTrapItems.map((item, idx) => (
+                <li key={idx}>• {item}</li>
+              ))}
             </ul>
           </div>
 
           <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-200/80 space-y-2">
             <div className="font-bold text-amber-950 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-              The Sanctuary Batched Architecture
+              {t.batchedArchTitle}
             </div>
             <ul className="space-y-1.5 text-amber-900/90 text-xs leading-relaxed">
-              <li>• All tasks are calculated upfront with estimated minutes.</li>
-              <li>• Speedrun chores in a single focused morning blitz.</li>
-              <li>• Depart at a fixed time ({schedule.departureTime}) without guilt.</li>
-              <li>• Enjoy {formatMinutesDuration(schedule.uninterruptedStudyMinutes)} of deep, distraction-free flow state at the library.</li>
+              {t.batchedArchItems(schedule.departureTime, formatMinutesDuration(schedule.uninterruptedStudyMinutes, lang)).map((item, idx) => (
+                <li key={idx}>• {item}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -282,3 +285,4 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
     </div>
   );
 };
+
